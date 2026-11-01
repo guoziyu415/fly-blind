@@ -1,0 +1,146 @@
+[
+ {
+  "id": "en01",
+  "lang": "en",
+  "src": "cand/c1_lobster",
+  "scene": "A bright blue lobster on pebbles in an aquarium tank."
+ },
+ {
+  "id": "en02",
+  "lang": "en",
+  "src": "cand/c10_peafowl",
+  "scene": "Four all-white peacocks resting and walking on a green lawn."
+ },
+ {
+  "id": "en03",
+  "lang": "en",
+  "src": "out/img/en03",
+  "scene": "Palm trees covered in snow in a city plaza, with apartment towers behind."
+ },
+ {
+  "id": "en04",
+  "lang": "en",
+  "src": "out/img/en04",
+  "scene": "A Shiba-like dog wearing a hot dog costume on a leash at a costume parade."
+ },
+ {
+  "id": "en05",
+  "lang": "en",
+  "src": "out/img/en05",
+  "scene": "A black swan with a red beak swimming on calm water."
+ },
+ {
+  "id": "en06",
+  "lang": "en",
+  "src": "out/img/en06",
+  "scene": "Aerial view of bubblegum-pink Lake Hillier next to the blue ocean and green forest."
+ },
+ {
+  "id": "en07",
+  "lang": "en",
+  "src": "out/img/en07",
+  "scene": "A red panda standing on a tree branch."
+ },
+ {
+  "id": "en08",
+  "lang": "en",
+  "src": "cand/c9_beagle",
+  "scene": "A beagle lying down while wearing sunglasses."
+ },
+ {
+  "id": "en09",
+  "lang": "en",
+  "src": "out/img/en09",
+  "scene": "Goats standing high up in the branches of an argan tree."
+ },
+ {
+  "id": "en10",
+  "lang": "en",
+  "src": "out/img/en10",
+  "scene": "A white tiger with dark stripes lying on a rock among green plants."
+ },
+ {
+  "id": "en11",
+  "lang": "en",
+  "src": "out/img/en11",
+  "scene": "The multicolored peeling bark of a rainbow eucalyptus tree trunk."
+ },
+ {
+  "id": "en12",
+  "lang": "en",
+  "src": "out/img/en12",
+  "scene": "A shaggy Bactrian camel covered in snowflakes in a snowy enclosure."
+ },
+ {
+  "id": "en13",
+  "lang": "en",
+  "src": "out/img/en13",
+  "scene": "African penguins standing on a white sand beach by turquoise water."
+ },
+ {
+  "id": "en14",
+  "lang": "en",
+  "src": "out/img/en14",
+  "scene": "A head of bright purple cauliflower surrounded by green leaves."
+ },
+ {
+  "id": "en15",
+  "lang": "en",
+  "src": "out/img/en15",
+  "scene": "A hand holding two halves of a watermelon with yellow flesh."
+ },
+ {
+  "id": "en16",
+  "lang": "en",
+  "src": "out/img/en16",
+  "scene": "A man standing in shallow sea water holding a dog above a surfboard."
+ },
+ {
+  "id": "en17",
+  "lang": "en",
+  "src": "cand/c5_flamingo",
+  "scene": "Pink flamingos standing together in snow among bare trees."
+ },
+ {
+  "id": "en18",
+  "lang": "en",
+  "src": "out/img/ja02",
+  "scene": "Close-up of an albino squirrel with white fur and pink eyes eating."
+ },
+ {
+  "id": "en19",
+  "lang": "en",
+  "src": "out/img/ja03",
+  "scene": "An upside-down house lit up at night on a seafront promenade (Brighton)."
+ },
+ {
+  "id": "en20",
+  "lang": "en",
+  "src": "out/img/ja04",
+  "scene": "A black leopard (black panther) lying on sand under a palm-like plant."
+ },
+ {
+  "id": "en21",
+  "lang": "en",
+  "src": "out/img/ja05",
+  "scene": "Close-up of a spiny cactus covered with snow and ice."
+ },
+ {
+  "id": "en22",
+  "lang": "en",
+  "src": "cand/d1_elcar",
+  "scene": "A Chicago 'L' train car standing on an office rooftop terrace."
+ },
+ {
+  "id": "en23",
+  "lang": "en",
+  "src": "cand/c8_pumpkin",
+  "scene": "People paddling giant hollowed-out pumpkins as boats on a river."
+ },
+ {
+  "id": "en24",
+  "lang": "en",
+  "src": "out/img/ja08",
+  "scene": "A blue-footed booby standing on a rock by the sea."
+ }
+]
