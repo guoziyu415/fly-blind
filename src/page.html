@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fly Blind · 目を閉じて飛べ · Code415</title>
+<meta name="description" content="A browser game about LOWN: a diffusion vision-language model only looks at the image when it needs to. Can you look less than the AI? 画像を見るのは必要なときだけ。AIより少なく見て、正しい説明文を書けるか。">
+<link rel="canonical" href="https://code415.dev/demos/2026-11-01/fly-blind">
+<meta property="og:title" content="Fly Blind · 目を閉じて飛べ">
+<meta property="og:description" content="The AI only looks at the picture when it needs to. Can you look less? A game built on real LLaDA-V traces.">
+<meta property="og:image" content="https://code415.dev/demos/2026-11-01/fly-blind/og.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05060f;--ink:#e9ecff;--ink2:#aab3dd;--ink3:#6c75a3;--ok:#5dffa0;--lk:#6bdcff;--ng:#ff4f6a;--mem:#ffb648;--pink:#ff4fd8;--violet:#8b6bff;--panel:rgba(10,12,32,.86);--line:#262c55}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'DotGothic16',system-ui,sans-serif;-webkit-text-size-adjust:100%}
+a{color:var(--lk)}
+.top{display:flex;align-items:center;justify-content:space-between;max-width:980px;margin:0 auto;padding:10px 16px;font-size:13px;color:var(--ink3)}
+.top a{color:var(--ink2);text-decoration:none}
+.langs button{background:none;border:1px solid var(--line);color:var(--ink3);font:inherit;padding:8px 12px;min-height:40px;border-radius:8px;cursor:pointer}
+.langs button.on{color:var(--ink);border-color:var(--violet)}
+#stage{position:relative;margin:0 auto;width:min(100vw,calc((100svh - 62px) * 9 / 16),480px);width:min(100vw,calc((100dvh - 62px) * 9 / 16),480px);aspect-ratio:9/16;overflow:hidden;border-radius:14px;background:#05060f;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+@media (max-width:520px){#stage{border-radius:0}}
+#view,#gl{position:absolute;inset:0;display:block;width:100%;height:100%}
+#view{image-rendering:pixelated}
+.has3d #view{display:none}
+/* HUD */
+#hud{position:absolute;left:0;right:0;top:0;padding:10px 10px 0;pointer-events:none}
+.hrow{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2)}
+.hrow .sp{flex:1}
+.pill{background:rgba(5,6,15,.7);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.pill b{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--ink)}
+#hud-sent{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;min-height:24px}
+.chip{font-size:13px;padding:2px 6px;border-radius:5px;background:rgba(20,24,52,.85);border:1px solid #2b3264;color:var(--ink2);line-height:1.3}
+.chip.m{color:#3c4472}
+.chip.join{margin-left:-5px;border-top-left-radius:0;border-bottom-left-radius:0;border-left-color:transparent}
+.chip.ok{color:#05210f;background:var(--ok);border-color:var(--ok)}
+.chip.lk{color:#04202b;background:var(--lk);border-color:var(--lk)}
+.chip.ng{color:#fff;background:var(--ng);border-color:var(--ng);text-decoration:line-through}
+#mem{position:absolute;right:10px;top:84px;width:62px;height:62px;border-radius:10px;border:1px solid var(--mem);background:#0b0e22 center/cover no-repeat;display:none;pointer-events:none}
+#mem.on{display:block}
+#memwrap{position:absolute;right:8px;top:150px;font-size:10px;color:var(--mem);text-align:right;pointer-events:none;max-width:110px;display:none}
+#memwrap.on{display:block}
+#mem.noimg{display:grid;place-items:center;font-size:24px}
+.hint{position:absolute;left:10px;right:80px;top:96px;font-size:13px;line-height:1.35;pointer-events:none;text-shadow:0 1px 0 #000}
+.hint.ok{color:var(--ok)}.hint.ng{color:var(--ng)}.hint.lk{color:var(--lk)}.hint.nm{color:var(--ink2)}
+/* controls */
+#ctl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:18px;padding:0 14px calc(14px + env(safe-area-inset-bottom))}
+.cbtn{width:58px;height:58px;border-radius:16px;background:rgba(12,14,36,.82);border:1px solid #333b74;color:var(--ink);font-size:22px;cursor:pointer;display:grid;place-items:center}
+#eyebtn{width:86px;height:86px;border-radius:50%;font-size:34px;border:2px solid var(--lk);background:radial-gradient(circle at 50% 40%,#173a55,#0a1328);box-shadow:0 0 22px rgba(107,220,255,.35)}
+#eyebtn:disabled{opacity:.35;box-shadow:none;border-color:#2b3264}
+#eyebtn .k{position:absolute;margin-top:62px;font-size:9px;color:var(--ink3);font-family:'Press Start 2P'}
+#snd{position:absolute;left:8px;top:calc(50% - 22px);width:44px;height:44px;font-size:16px;border-radius:12px}
+/* overlays */
+.ov{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(3,4,12,.55)}
+.ov.show{display:flex}
+.card{width:100%;max-width:400px;max-height:calc(100% - 20px);overflow:auto;-webkit-overflow-scrolling:touch;background:rgba(10,12,32,.94);border:1px solid var(--line);border-radius:16px;padding:16px}
+.logo{font-family:'Press Start 2P',monospace;font-size:26px;line-height:1.25;letter-spacing:1px;text-align:center;color:#fff;text-shadow:3px 3px 0 var(--pink),-1px -1px 0 var(--lk)}
+.logo small{display:block;font-family:'DotGothic16';font-size:22px;letter-spacing:4px;margin-top:10px;text-shadow:2px 2px 0 var(--violet)}
+.sub{text-align:center;color:var(--ink2);font-size:14px;line-height:1.6;margin:14px 0 4px}
+.btn{display:block;width:100%;margin-top:10px;padding:13px 14px;border-radius:12px;border:1px solid #3a4382;background:#121640;color:var(--ink);font:inherit;font-size:16px;cursor:pointer}
+.btn.primary{background:linear-gradient(180deg,#ff4fd8,#a33cff);border-color:#ff8be6;color:#fff;box-shadow:0 4px 0 #5a1a8c}
+.btn:active{transform:translateY(2px)}
+.tiny{font-size:11px;color:var(--ink3);text-align:center;margin-top:12px;line-height:1.5}
+.how li{margin:0 0 9px;line-height:1.55;font-size:14px;color:var(--ink2)}
+.how b{color:var(--ink)}
+.how b.k-ok,.k-ok{color:var(--ok)}.how b.k-ng,.k-ng{color:var(--ng)}.how b.k-lk,.k-lk{color:var(--lk)}.how b.k-mem,.k-mem{color:var(--mem)}
+body.playing #stage{touch-action:none}
+.chip.au{color:#8f98c8;background:rgba(20,24,52,.6)}
+@media (max-height:720px){.how li{font-size:12.5px;margin-bottom:6px}.logo{font-size:22px}.logo small{font-size:19px}.sub{font-size:13px}.btn{padding:11px}}
+.key{display:inline-block;padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:12px}
+.k-ok{color:var(--ok)}.k-ng{color:var(--ng)}.k-lk{color:var(--lk)}.k-mem{color:var(--mem)}
+.lvtag{font-family:'Press Start 2P';font-size:11px;color:var(--pink);text-align:center}
+.q{font-size:17px;text-align:center;margin:12px 0 6px;line-height:1.5}
+.dim{color:var(--ink3);font-size:13px;text-align:center;line-height:1.6}
+.verdict{font-size:20px;text-align:center;margin:8px 0 12px}
+.row{display:grid;grid-template-columns:62px 1fr 40px;grid-template-rows:auto auto;column-gap:8px;align-items:center;margin:8px 0}
+.row .who{grid-row:1/3;font-size:13px}
+.row .nums{font-size:12px;color:var(--ink2)} .row .nums b{font-family:'Press Start 2P';font-size:10px;color:var(--ink)} .row .x{color:var(--ng);margin-left:6px}
+.row .meter{grid-column:2;height:8px;background:#151a3e;border-radius:4px;overflow:hidden} .row .meter i{display:block;height:100%;background:var(--violet)}
+.row.me .meter i{background:var(--pink)} .row.lown .meter i{background:var(--lk)} .row.all .meter i{background:#59618f}
+.row .pct{grid-row:1/3;grid-column:3;font-family:'Press Start 2P';font-size:10px;text-align:right}
+.rsimg{height:120px;border-radius:10px;background:#0b0e22 center/cover no-repeat;margin:10px 0 8px;border:1px solid var(--line)}
+.cap{font-size:13px;color:var(--ink2);margin:4px 0}
+.cap b{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px}
+#fn-grid .g{display:flex;gap:3px;justify-content:center;margin:4px 0}
+#fn-grid i{width:14px;height:14px;border-radius:3px;display:block}
+#fn-grid i.ok{background:var(--ok)}#fn-grid i.lk{background:var(--lk)}#fn-grid i.ng{background:var(--ng)}
+.score{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.score div{background:#0f1336;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;font-size:12px;color:var(--ink2)}
+.score b{display:block;font-family:'Press Start 2P';font-size:11px;line-height:1.7;color:var(--ink);margin-top:6px;white-space:nowrap}
+#iris{position:absolute;left:50%;top:31%;transform:translate(-50%,-50%) scale(.6);width:62%;aspect-ratio:1.6;opacity:0;pointer-events:none;transition:opacity .18s,transform .25s cubic-bezier(.2,1.4,.4,1)}
+#iris.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#iris .lens{width:100%;height:100%;border-radius:50%;overflow:hidden;border:3px solid var(--lk);box-shadow:0 0 30px rgba(107,220,255,.7),inset 0 0 30px rgba(0,0,0,.6);background:#0b0e22}
+#iris img{width:100%;height:100%;object-fit:cover;display:block}
+#iris.noimg .lens{display:grid;place-items:center}
+#cd{position:absolute;left:0;right:0;top:40%;text-align:center;font-family:'Press Start 2P';font-size:44px;color:#fff;text-shadow:4px 4px 0 var(--pink);opacity:0;pointer-events:none}
+#cd.show{opacity:1}
+#toast{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);background:#111536;border:1px solid var(--ok);color:var(--ok);padding:8px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+/* learn */
+.learn{max-width:760px;margin:0 auto;padding:30px 18px 60px;line-height:1.75;color:var(--ink2);font-size:15px}
+.learn h2{color:var(--ink);font-size:20px;margin:34px 0 10px}
+.learn h2:first-child{margin-top:8px}
+.learn .fig{background:#0b0e24;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+.learn table{width:100%;border-collapse:collapse;font-size:14px}
+.learn td,.learn th{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
+.learn th{color:var(--ink);font-weight:normal}
+.learn .lab{font-size:11px;padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--ink3);margin-left:4px;white-space:nowrap}
+.learn ul{padding-left:20px}
+.learn li{margin:4px 0}
+.foot{max-width:760px;margin:0 auto;padding:0 18px 40px;font-size:12px;color:var(--ink3)}
+.title-on #hud,.title-on #hint,.title-on #mem,.title-on #memwrap,.title-on #ctl{visibility:hidden}
+.rec #snd,.rec #ctl,.rec .top,.rec .learn,.rec .foot{display:none}
+.rec #stage{border-radius:0}
+@media (prefers-reduced-motion:reduce){.btn:active{transform:none}#iris{transition:none}}
+</style>
+</head>
+<body>
+<div class="top"><a href="/demos">← Code415 Demos</a><span class="langs"><button data-lang="ja">日本語</button> <button data-lang="en">English</button></span></div>
+
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <canvas id="view" aria-label="game"></canvas>
+  <div id="hud">
+    <div class="hrow"><span class="pill" id="hud-lv">LV 1</span><span class="pill"><b id="hud-step">01/12</b></span><span class="sp"></span><span class="pill">👁 <b id="hud-looks">0</b></span><span class="pill">✕ <b id="hud-miss">0</b></span></div>
+    <div id="hud-sent"></div>
+  </div>
+  <div id="hint" class="hint"></div>
+  <div id="mem" title=""></div><div id="memwrap"><span data-t="memLabel"></span><br><span id="mem-age"></span></div>
+  <div id="ctl">
+    <button class="cbtn" id="lbtn" aria-label="left">◀</button>
+    <button class="cbtn" id="eyebtn" aria-label="look">👁</button>
+    <button class="cbtn" id="rbtn" aria-label="right">▶</button>
+  </div>
+  <button class="cbtn" id="snd" aria-label="sound">🔇</button>
+
+  <div class="ov show" id="ov-title"><div class="card">
+    <div class="logo">FLY BLIND<small data-t="titleJa"></small></div>
+    <p class="sub" data-t="tag"></p>
+    <button class="btn primary" id="b-play"><span id="t-day"></span></button>
+    <button class="btn" id="b-how" data-t="how"></button>
+    <p class="tiny" data-t="titleNote"></p>
+  </div></div>
+
+  <div class="ov" id="ov-how"><div class="card how">
+    <ol style="padding-left:18px;margin:4px 0 6px" data-t="howList"></ol>
+    <button class="btn primary" id="how-back" data-t="gotIt"></button>
+  </div></div>
+
+  <div class="ov" id="ov-intro"><div class="card">
+    <div class="lvtag" id="in-lv"></div>
+    <p class="dim" data-t="inLead"></p>
+    <p class="q" id="in-q"></p>
+    <p class="dim"><span id="in-n"></span> · <span id="in-speed"></span></p>
+    <button class="btn primary" id="in-go" data-t="go"></button>
+  </div></div>
+
+  <div class="ov" id="ov-result"><div class="card">
+    <div class="lvtag" id="rs-lv"></div>
+    <div class="verdict" id="rs-verdict"></div>
+    <div id="rs-bars"></div>
+    <p class="tiny" id="rs-note" style="text-align:left;margin-top:4px"></p>
+    <div class="rsimg" id="rs-img"></div>
+    <p class="cap"><span data-t="aiWrote"></span> <b id="rs-cap"></b></p>
+    <p class="cap" data-t="youWrote"></p><div class="chips" id="rs-yours"></div>
+    <button class="btn primary" id="rs-next"></button>
+  </div></div>
+
+  <div class="ov" id="ov-final"><div class="card">
+    <div class="lvtag" data-t="finalTag"></div>
+    <div class="verdict" id="fn-verdict"></div>
+    <div class="score"><div><span data-t="you"></span><b id="fn-me"></b></div><div>LOWN<b id="fn-lown"></b></div></div>
+    <div id="fn-grid"></div>
+    <button class="btn primary" id="fn-share" data-t="share"></button>
+    <button class="btn" id="fn-learn" data-t="learnBtn"></button>
+    <button class="btn" id="fn-again" data-t="again"></button>
+  </div></div>
+  <div id="toast"></div>
+  <div id="iris"><div class="lens"><img alt=""></div></div>
+  <div id="cd"></div>
+</div>
+
+<section class="learn" id="learn">
+  <h2 data-t="l1h"></h2>
+  <div data-t="l1"></div>
+  <h2 data-t="l2h"></h2>
+  <div data-t="l2"></div>
+  <h2 data-t="l3h"></h2>
+  <div class="fig" data-tv="l3"></div>
+  <h2 data-t="l4h"></h2>
+  <div data-t="l4"></div>
+  <h2 data-t="l5h"></h2>
+  <div data-t="l5"></div>
+  <ul id="credits" style="font-size:13px"></ul>
+</section>
+<div class="foot" data-t="foot"></div>
+
+<script>/*@@STRINGS@@*/</script>
+<script>/*@@DATA@@*/</script>
+<script>/*@@CORE@@*/</script>
+<script>/*@@GAME@@*/</script>
+<script type="importmap">{"imports":{"three":"@@THREE_MAIN@@","three/addons/":"@@THREE_ADDONS@@"}}</script>
+<script type="module">
+/*@@SCENE@@*/
+try { const s = createScene(document.getElementById("gl")); window.S3D = s; window.dispatchEvent(new Event("s3d")); } catch (e) { console.warn("3D unavailable, using 2D", e); }
+</script>
+</body>
+</html>
